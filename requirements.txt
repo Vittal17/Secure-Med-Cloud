@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+phe
+pydantic
+scikit-learn
+numpy
