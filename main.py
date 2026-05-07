@@ -34,9 +34,10 @@ async def predict_diabetes(data: EncryptedPatientData):
         public_key = paillier.PaillierPublicKey(n=int(data.public_key_n))
         enc_features = [paillier.EncryptedNumber(public_key, int(c[0]), int(c[1])) for c in data.encrypted_features]
         
-        # CRITICAL FIX: Convert numpy.float64 to standard Python float to prevent phe library crashes
-        weights = [float(w) for w in diabetes_model.coef_[0]]
-        intercept = float(diabetes_model.intercept_[0])
+        # CRITICAL FIX 2.0: Round weights to 5 decimal places to prevent Plaintext Overflow
+        # This stops the phe library from applying massive exponent shifts that break the 1024-bit key limit.
+        weights = [round(float(w), 5) for w in diabetes_model.coef_[0]]
+        intercept = round(float(diabetes_model.intercept_[0]), 5)
         
         encrypted_prediction = sum([w * x for w, x in zip(weights, enc_features)]) + intercept
         
@@ -54,9 +55,9 @@ async def predict_heart(data: EncryptedPatientData):
         public_key = paillier.PaillierPublicKey(n=int(data.public_key_n))
         enc_features = [paillier.EncryptedNumber(public_key, int(c[0]), int(c[1])) for c in data.encrypted_features]
         
-        # CRITICAL FIX: Convert numpy.float64 to standard Python float
-        weights = [float(w) for w in heart_model.coef_[0]]
-        intercept = float(heart_model.intercept_[0])
+        # CRITICAL FIX 2.0: Round weights to 5 decimal places to prevent Plaintext Overflow
+        weights = [round(float(w), 5) for w in heart_model.coef_[0]]
+        intercept = round(float(heart_model.intercept_[0]), 5)
         
         encrypted_prediction = sum([w * x for w, x in zip(weights, enc_features)]) + intercept
         
